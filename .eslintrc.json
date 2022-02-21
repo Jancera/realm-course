@@ -1,0 +1,52 @@
+{
+  /* Dependencies
+  npm install -D eslint eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-react @react-native-community/eslint-config @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react-hooks 
+  yarn add -D eslint eslint-config-airbnb eslint-plugin-import eslint-plugin-jsx-a11y eslint-plugin-react @react-native-community/eslint-config @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-plugin-react-hooks
+  */
+
+  "root": true,
+  "env": {
+    "es2021": true
+  },
+  "extends": [
+    "plugin:react/recommended",
+    "airbnb",
+    "@react-native-community"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "@typescript-eslint"],
+  "rules": {
+    "react/jsx-filename-extension": [
+      "error",
+      { "extensions": [".js", ".tsx", ".jsx"] }
+    ],
+    "@typescript-eslint/no-unused-vars": 1,
+    "quotes": ["error", "double"],
+    "prettier/prettier": 0,
+    "no-var": 1,
+    "import/prefer-default-export": 0,
+    "global-require": 0,
+    "react-hooks/rules-of-hooks": 2,
+    "prefer-destructuring": 2,
+    "react-native/no-unused-styles": 1,
+    "react-native/split-platform-components": 1,
+    "react-native/no-inline-styles": 1,
+    "react-native/sort-styles": 0,
+    "react-native/no-color-literals": 0,
+    "react-native/no-raw-text": 0,
+    "react-native/no-single-element-style-arrays": 2,
+    "import/no-unresolved": 0,
+    "import/extensions": 0,
+    "no-return-assign": 0,
+    "react/jsx-props-no-spreading": 1,
+    "react/function-component-definition": 0,
+    "no-return-await": 0
+  }
+}
