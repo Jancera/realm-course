@@ -1,42 +1,51 @@
 import React from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 
+import Realm from "realm";
 import getRealm from "../../../infrastructure/realm";
-import {
-  ITask,
-  ITaskObject,
-} from "../../../business/models/interfaces/ITask";
+import { ITask, ITaskObject } from "../../../business/models/interfaces/ITask";
 
 import writeTask from "../../../business/services/writeTask";
 
 const Home = () => {
-  let firstTask: ITaskObject;
+  let task: Realm.Results<ITaskObject>;
 
   const write = async () => {
-    firstTask = await writeTask({
+    await writeTask({
       _id: 1,
       name: "Record Video",
       status: "Task running now...",
     });
   };
 
-  const getTasks = async () => {
+  const getTask = async () => {
     const realm = await getRealm();
-
     try {
-      const data = realm.objects<ITask>("Task");
-
-      console.log(data);
+      task = realm.objects<ITask>("Task").filtered("_id = 1");
+      console.log(task);
     } catch (error) {
       console.log(error);
     }
   };
 
+  const updateTask = async () => {
+    const realm = await getRealm();
+
+    const data = {
+      _id: 1,
+      status: "Finished 2",
+    };
+
+    realm.write(() => {
+      realm.create("Task", data, Realm.UpdateMode.Modified);
+    });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Hello from Home</Text>
-      <Button title="Write Tasks" onPress={write} />
-      <Button title="Get Tasks" onPress={getTasks} />
+      <Button title="Get Tasks" onPress={getTask} />
+      <Button title="Update Task" onPress={updateTask} />
     </View>
   );
 };
