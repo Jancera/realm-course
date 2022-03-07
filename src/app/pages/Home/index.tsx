@@ -1,51 +1,29 @@
 import React from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 
-import Realm from "realm";
 import getRealm from "../../../infrastructure/realm";
-import { ITask, ITaskObject } from "../../../business/models/interfaces/ITask";
-
-import writeTask from "../../../business/services/writeTask";
+import { ITask } from "../../../business/models/interfaces/ITask";
+import getAllTasks from "../../../business/services/getAllTasks";
 
 const Home = () => {
-  let task: Realm.Results<ITaskObject>;
-
-  const write = async () => {
-    await writeTask({
-      _id: 1,
-      name: "Record Video",
-      status: "Task running now...",
-    });
+  const getAll = async () => {
+    const data = await getAllTasks();
+    console.log(data);
   };
 
-  const getTask = async () => {
+  const deleteTask = async () => {
     const realm = await getRealm();
-    try {
-      task = realm.objects<ITask>("Task").filtered("_id = 1");
-      console.log(task);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const updateTask = async () => {
-    const realm = await getRealm();
-
-    const data = {
-      _id: 1,
-      status: "Finished 2",
-    };
 
     realm.write(() => {
-      realm.create("Task", data, Realm.UpdateMode.Modified);
+      realm.delete(realm.objects<ITask>("Task").filtered("_id = 1"));
     });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Hello from Home</Text>
-      <Button title="Get Tasks" onPress={getTask} />
-      <Button title="Update Task" onPress={updateTask} />
+      <Text style={styles.text}>Realm Delete</Text>
+      <Button title="Get All Tasks" onPress={getAll} />
+      <Button title="Delete Task" onPress={deleteTask} />
     </View>
   );
 };
@@ -57,7 +35,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    marginBottom: 20,
+    marginBottom: 30,
+    fontSize: 30,
+    fontWeight: "bold",
   },
 });
 
