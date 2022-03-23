@@ -10,11 +10,13 @@ import {
 
 import Realm from "realm";
 
-import getRealm from "../../../infrastructure/realm";
 import { ITask } from "../../../business/models/interfaces/ITask";
 import getAllTasks from "../../../business/services/getAllTasks";
+import { useMainContext } from "../../../business/context/RealmContext";
 
 const Home = () => {
+  const realm = useMainContext();
+
   const [taskName, setTaskName] = useState("");
 
   const [data, setData] = useState<
@@ -22,9 +24,7 @@ const Home = () => {
   >([]);
 
   useEffect(() => {
-    const cleanup = (async () => {
-      const realm = await getRealm();
-
+    if (realm) {
       const tasks = realm.objects<ITask>("Task");
 
       setData(tasks);
@@ -32,39 +32,37 @@ const Home = () => {
       tasks.addListener((values) => {
         setData([...values]);
       });
+    } else {
+      // Handle realm undefined error
+    }
+  }, [realm]);
 
-      return () => {
-        tasks.removeAllListeners();
-        realm.close();
-      };
-    })();
-
-    return () => {
-      cleanup.then((func) => func());
-    };
-  }, []);
-
-  const addTask = async () => {
-    const realm = await getRealm();
-    realm.write(() => {
-      realm.create<ITask>("Task", {
-        _id: data.length + 1,
-        name: taskName,
-        status: "Created now",
+  const addTask = () => {
+    if (realm) {
+      realm.write(() => {
+        realm.create<ITask>("Task", {
+          _id: data.length + 1,
+          name: taskName,
+          status: "Created now",
+        });
       });
-    });
-    // setTaskName("");
+      // setTaskName("");
+    }
   };
 
   const getAll = async () => {
     console.log(await getAllTasks());
+    if (realm) {
+      realm.close();
+    }
   };
 
-  const deleteAll = async () => {
-    const realm = await getRealm();
-    realm.write(() => {
-      realm.deleteAll();
-    });
+  const deleteAll = () => {
+    if (realm) {
+      realm.write(() => {
+        realm.deleteAll();
+      });
+    }
   };
 
   return (
