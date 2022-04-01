@@ -1,10 +1,11 @@
 import Realm from "realm";
-import TaskSchema from "../business/models/Task";
+import DogSchema from "../business/models/Dog";
+import PersonSchema from "../business/models/Person";
 
 const getRealm = async () =>
   await Realm.open({
     path: "myrealm",
-    schema: [TaskSchema],
+    schema: [PersonSchema, DogSchema],
   });
 
 export default getRealm;

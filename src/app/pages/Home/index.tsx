@@ -10,54 +10,70 @@ import {
 
 import Realm from "realm";
 
-import { ITask } from "../../../business/models/interfaces/ITask";
-import getAllTasks from "../../../business/services/getAllTasks";
 import { useMainContext } from "../../../business/context/RealmContext";
+import { IPerson } from "../../../business/models/interfaces/IPerson";
+
+const initialFormData = {
+  name: "",
+  age: undefined,
+  dog: { name: "", age: undefined },
+};
 
 const Home = () => {
   const realm = useMainContext();
 
-  const [taskName, setTaskName] = useState("");
+  const [formData, setFormData] = useState<IPerson>(initialFormData);
 
   const [data, setData] = useState<
-    Realm.Results<ITask & Realm.Object> | ITask[]
+    Realm.Results<IPerson & Realm.Object> | IPerson[]
   >([]);
 
   useEffect(() => {
     if (realm) {
-      const tasks = realm.objects<ITask>("Task");
+      const dataStored = realm.objects<IPerson>("Person");
 
-      setData(tasks);
+      setData(dataStored);
 
-      tasks.addListener((values) => {
-        setData([...values]);
+      dataStored.addListener((value) => {
+        setData([...value]);
       });
     } else {
       // Handle realm undefined error
     }
   }, [realm]);
 
-  const addTask = () => {
+  const createPerson = () => {
     if (realm) {
+      const personData: IPerson = {
+        name: formData.name,
+        age: formData.age,
+      };
+
+      if (
+        formData.dog &&
+        formData.dog.name !== "" &&
+        formData.dog.age !== undefined
+      ) {
+        personData.dog = {
+          name: formData.dog.name,
+          age: formData.dog.age,
+        };
+      }
       realm.write(() => {
-        realm.create<ITask>("Task", {
-          _id: data.length + 1,
-          name: taskName,
-          status: "Created now",
-        });
+        realm.create<IPerson>("Person", personData);
       });
-      // setTaskName("");
+      setFormData(initialFormData);
     }
   };
 
-  const getAll = async () => {
-    console.log(await getAllTasks());
+  const logData = () => {
     if (realm) {
-      realm.close();
+      console.log("Person: ", realm.objects<IPerson>("Person"));
+      console.log("Dog: ", realm.objects("Dog"));
     }
   };
 
-  const deleteAll = () => {
+  const delAllPeople = () => {
     if (realm) {
       realm.write(() => {
         realm.deleteAll();
@@ -67,15 +83,57 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Realm Listen</Text>
+      <Text style={styles.text}>Realm To-One</Text>
 
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          value={taskName}
-          onChangeText={(value) => setTaskName(value)}
+          placeholder="Person name"
+          value={formData.name}
+          onChangeText={(text) => {
+            setFormData((value) => ({ ...value, name: text }));
+          }}
         />
-        <Button title="Add" onPress={addTask} />
+        <TextInput
+          style={styles.input}
+          placeholder="Person age"
+          value={formData.age?.toString()}
+          keyboardType="numeric"
+          onChangeText={(text) => {
+            setFormData((value) => ({ ...value, age: parseInt(text, 10) }));
+          }}
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Dog name"
+          value={formData.dog?.name}
+          onChangeText={(text) => {
+            setFormData((value) => ({
+              ...value,
+              dog: { ...value.dog, name: text },
+            }));
+          }}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Dog age"
+          value={formData.dog?.age?.toString()}
+          onChangeText={(text) => {
+            setFormData((value) => ({
+              ...value,
+              dog: { ...value.dog, age: parseInt(text, 10) },
+            }));
+          }}
+        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <Button title="   Add   " onPress={createPerson} />
+        <Button title="   Log   " onPress={logData} />
+        <Button title="   Del   " onPress={delAllPeople} />
       </View>
 
       <Text style={styles.textInfo}>Stored data</Text>
@@ -86,15 +144,26 @@ const Home = () => {
         renderItem={({ item }) => {
           return (
             <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>{item.name}</Text>
+              <Text>Person:</Text>
+              <View style={styles.contentContainer}>
+                <Text style={styles.itemText}>
+                  Name: {item.name}, age: {item.age}
+                </Text>
+              </View>
+              {item.dog && (
+                <>
+                  <Text>Dog:</Text>
+                  <View style={styles.contentContainer}>
+                    <Text style={styles.itemText}>
+                      Name: {item.dog.name}, age: {item.dog.age}
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
           );
         }}
       />
-      <View style={styles.buttonContainer}>
-        <Button title="Get all" onPress={getAll} />
-        <Button title="Delete all" onPress={deleteAll} />
-      </View>
     </View>
   );
 };
@@ -106,7 +175,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   text: {
-    marginBottom: 30,
     fontSize: 30,
     fontWeight: "bold",
   },
@@ -119,10 +187,10 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "space-around",
-    marginHorizontal: 10,
+    margin: 10,
   },
   input: {
-    width: "80%",
+    width: "45%",
     borderWidth: 2,
     borderColor: "grey",
     fontSize: 20,
@@ -136,20 +204,24 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   itemContainer: {
-    flexDirection: "row",
     marginHorizontal: 5,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderColor: "grey",
   },
+  contentContainer: {
+    flexDirection: "row",
+    marginBottom: 5,
+  },
   itemText: {
     fontSize: 20,
     fontWeight: "500",
+    marginRight: 10,
   },
   buttonContainer: {
     flexDirection: "row",
-    width: "50%",
-    justifyContent: "space-between",
+    width: "60%",
+    justifyContent: "space-around",
     margin: 10,
   },
 });
