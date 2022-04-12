@@ -5,7 +5,7 @@ const PersonSchema: ObjectSchema = {
   properties: {
     name: "string",
     age: "int",
-    dog: "Dog?",
+    dog: "Dog[]",
   },
   // primaryKey: "name",
 };
