@@ -3,9 +3,9 @@ import { ObjectSchema } from "realm";
 const TaskSchema: ObjectSchema = {
   name: "Task",
   properties: {
-    _id: "int",
-    name: "string",
-    status: "string?",
+    _id: "string",
+    _partition: "string",
+    task: "string",
   },
   primaryKey: "_id",
 };

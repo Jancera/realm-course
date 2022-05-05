@@ -8,6 +8,8 @@ import {
   View,
 } from "react-native";
 
+import "react-native-get-random-values";
+import { v4 as uuid } from "uuid";
 import Realm from "realm";
 
 import { ITask } from "../../../business/models/interfaces/ITask";
@@ -41,20 +43,17 @@ const Home = () => {
     if (realm) {
       realm.write(() => {
         realm.create<ITask>("Task", {
-          _id: data.length + 1,
-          name: taskName,
-          status: "Created now",
+          _id: uuid(),
+          _partition: "Jancer",
+          task: taskName,
         });
       });
-      // setTaskName("");
+      setTaskName("");
     }
   };
 
   const getAll = async () => {
     console.log(await getAllTasks());
-    if (realm) {
-      realm.close();
-    }
   };
 
   const deleteAll = () => {
@@ -86,7 +85,8 @@ const Home = () => {
         renderItem={({ item }) => {
           return (
             <View style={styles.itemContainer}>
-              <Text style={styles.itemText}>{item.name}</Text>
+              <Text style={styles.itemTitle}>{item._partition}</Text>
+              <Text style={styles.itemText}>{item.task}</Text>
             </View>
           );
         }}
@@ -136,13 +136,16 @@ const styles = StyleSheet.create({
     borderColor: "grey",
   },
   itemContainer: {
-    flexDirection: "row",
     marginHorizontal: 5,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderColor: "grey",
   },
   itemText: {
+    fontSize: 18,
+    marginLeft: 10,
+  },
+  itemTitle: {
     fontSize: 20,
     fontWeight: "500",
   },
